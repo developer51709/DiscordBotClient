@@ -42,3 +42,6 @@ DiscordBotClient is an Electron-based desktop application that allows users to l
 ## Recent Changes
 - 2026-02-20: Initial Replit setup with VNC workflow, system dependencies, and placeholder VencordExtension
 - 2026-02-20: Switched from VNC to webview output with dual HTTP/HTTPS server architecture for mobile keyboard support
+- 2026-02-20: Implemented server-side API endpoints for bot client functionality (/api/botclient/info, /api/botclient/experiments/*)
+- 2026-02-20: Created web-compatible BotClientNative polyfill that mimics Electron IPC behavior using fetch and XMLHttpRequest
+- 2026-02-20: Successfully tested bot login - bot connects to Discord Gateway, loads all plugins, and functions properly in webview
