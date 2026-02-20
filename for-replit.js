@@ -1,2 +1,0 @@
-console.log("Note for replit agent:");
-console.log("The login now works, the server list is correct, and the bot is running however messages are not loading in the chat in any of the servers or channels.");
