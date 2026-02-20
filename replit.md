@@ -8,7 +8,7 @@ DiscordBotClient is an Electron-based desktop application that allows users to l
 - **Runtime**: Node.js 20 with Electron 40
 - **Build System**: `tsc` + `tsc-alias` (TypeScript compiler with path alias resolution)
 - **Package Manager**: npm
-- **Display**: VNC (Electron desktop app running in virtual display)
+- **Display**: Webview (HTTP server on port 5000) + headless Electron via xvfb-run
 
 ### Key Directories
 - `src/` - TypeScript source code
@@ -31,7 +31,8 @@ DiscordBotClient is an Electron-based desktop application that allows users to l
 - System dependencies: X11 libs, GTK3, NSS, ALSA, Mesa (libgbm), libxkbcommon
 - `LD_LIBRARY_PATH` includes mesa-libgbm path for Electron
 - Electron runs with `--no-sandbox --disable-gpu --disable-dev-shm-usage` flags
-- VNC output type for desktop display
+- Webview output on port 5000 (HTTP server shares Express app with HTTPS server)
+- Electron runs headlessly via xvfb-run for background processing
 
 ## Build Commands
 - `npm run build:ts` - Compile TypeScript to `build/`
@@ -40,3 +41,4 @@ DiscordBotClient is an Electron-based desktop application that allows users to l
 
 ## Recent Changes
 - 2026-02-20: Initial Replit setup with VNC workflow, system dependencies, and placeholder VencordExtension
+- 2026-02-20: Switched from VNC to webview output with dual HTTP/HTTPS server architecture for mobile keyboard support

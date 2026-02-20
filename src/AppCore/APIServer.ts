@@ -3,6 +3,7 @@
 import { scope } from "electron-log";
 import express from "express";
 import { readFileSync } from "fs";
+import http from "http";
 import https from "https";
 import morgan from "morgan";
 import { type AddressInfo } from "net";
@@ -77,6 +78,11 @@ app.use((req, res, next) => {
 });
 
 export default async function start (): Promise<number> {
+    const httpServer = http.createServer(app);
+    httpServer.listen(5000, "0.0.0.0", () => {
+        logger.log("HTTP Server listening on http://0.0.0.0:5000");
+    });
+
     return new Promise((resolve, reject) => {
         const callback = () => {
             const address = server.address() as AddressInfo;
