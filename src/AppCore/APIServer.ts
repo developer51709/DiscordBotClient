@@ -52,6 +52,8 @@ app.all("*", function (req, res, next) {
 
 registerRoutesSync(app, path.resolve(__dirname, "routes"), ["/api/v10", "/api/v9", "/api"]);
 
+app.use("/vencord", express.static(Constants.VencordExtensionPath));
+
 app.all("/developers/*", (req, res) => {
     return res.redirect("/app");
 });
@@ -70,7 +72,24 @@ app.use((req, res, next) => {
     // Main page
     if (["/", "/app", "/login"].includes(req.path) || ["/channels/"].some(s => req.path.startsWith(s))) {
         logger.log("Serving Discord HTML for route:", req.path);
-        return res.send(readFileSync(Constants.DiscordHTMLPath, "utf8"));
+        let html = readFileSync(Constants.DiscordHTMLPath, "utf8");
+        const vencordInjection = `
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    window.postMessage({
+        type: "vencord:meta",
+        meta: {
+            EXTENSION_VERSION: "1.14.2",
+            EXTENSION_BASE_URL: "/vencord/",
+            RENDERER_CSS_URL: "/vencord/dist/Vencord.css",
+        }
+    });
+}, { once: true });
+</script>
+<script src="/vencord/dist/Vencord.js"></script>
+<link href="/vencord/dist/Vencord.css" rel="stylesheet">`;
+        html = html.replace("</head>", vencordInjection + "\n</head>");
+        return res.send(html);
     }
     // Other routes
     req.headers = req.originalHeaders;
