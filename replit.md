@@ -45,3 +45,4 @@ DiscordBotClient is an Electron-based desktop application that allows users to l
 - 2026-02-20: Implemented server-side API endpoints for bot client functionality (/api/botclient/info, /api/botclient/experiments/*)
 - 2026-02-20: Created web-compatible BotClientNative polyfill that mimics Electron IPC behavior using fetch and XMLHttpRequest
 - 2026-02-20: Successfully tested bot login - bot connects to Discord Gateway, loads all plugins, and functions properly in webview
+- 2026-02-20: Added XHR/fetch URL rewriting interceptors to redirect Discord API calls (discord.com/api/...) to proxy origin, fixing message loading in webview

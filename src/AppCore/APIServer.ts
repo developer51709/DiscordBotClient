@@ -19,7 +19,7 @@ const logger = scope("APIServer");
 
 const app = express();
 
-app.use(express.json({ limit: "10mb" }));
+const jsonParser = express.json({ limit: "10mb" });
 
 if (Constants.VerboseAPIServerLogging) { app.use(
     morgan("dev", {
@@ -58,7 +58,7 @@ registerRoutesSync(app, path.resolve(__dirname, "routes"), ["/api/v10", "/api/v9
 
 app.use("/vencord", express.static(Constants.VencordExtensionPath));
 
-app.post("/api/botclient/info", async (req, res) => {
+app.post("/api/botclient/info", jsonParser, async (req, res) => {
     try {
         let token = (req.body.token || "").replace(/Bot/gi, "").trim();
         const response = await fetch("https://canary.discord.com/api/v9/applications/@me?with_counts=true", {
@@ -104,12 +104,12 @@ app.get("/api/botclient/experiments/guild", (req, res) => {
     res.json(GuildExperiment());
 });
 
-app.post("/api/botclient/experiments/user", (req, res) => {
+app.post("/api/botclient/experiments/user", jsonParser, (req, res) => {
     const { allData, botId } = req.body;
     res.json(UserExperiment(allData || [], botId || ""));
 });
 
-app.post("/api/botclient/experiments/apex", (req, res) => {
+app.post("/api/botclient/experiments/apex", jsonParser, (req, res) => {
     const { botId } = req.body;
     res.json(ApexExperiment(botId || ""));
 });
@@ -138,6 +138,42 @@ app.use((req, res, next) => {
         const defaultUserPatch = JSON.stringify(Constants.UserDefaultPatch);
         const vencordInjection = `
 <script>
+(function() {
+    var discordDomains = [
+        "https://discord.com",
+        "https://canary.discord.com",
+        "https://ptb.discord.com",
+        "https://discordapp.com",
+        "https://canary.discordapp.com",
+    ];
+    var currentOrigin = window.location.origin;
+    function rewriteUrl(url) {
+        if (typeof url !== "string") url = String(url);
+        for (var i = 0; i < discordDomains.length; i++) {
+            if (url.startsWith(discordDomains[i])) {
+                return currentOrigin + url.slice(discordDomains[i].length);
+            }
+        }
+        return url;
+    }
+    var OrigXHR = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url) {
+        arguments[1] = rewriteUrl(url);
+        return OrigXHR.apply(this, arguments);
+    };
+    var origFetch = window.fetch;
+    window.fetch = function(input, init) {
+        if (typeof input === "string") {
+            input = rewriteUrl(input);
+        } else if (input instanceof Request) {
+            var newUrl = rewriteUrl(input.url);
+            if (newUrl !== input.url) {
+                input = new Request(newUrl, input);
+            }
+        }
+        return origFetch.call(this, input, init);
+    };
+})();
 window.BotClientNative = {
     getBotInfo: function(token) {
         return fetch("/api/botclient/info", {
